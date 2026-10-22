@@ -93,7 +93,7 @@ function createBubble(root) {
   };
 }
 
-/** Wires up one hero: rise-in, sway (image hero only) and speech bubble, animated only while on screen. */
+/** Wires up one hero: rise-in, sway and speech bubble, animated only while on screen. */
 function startHero(hero) {
   const figure = hero.querySelector('.yaga');
   const swayEl = hero.querySelector('.yaga-sway');
@@ -106,7 +106,7 @@ function startHero(hero) {
   function frame(now) {
     raf = visible ? requestAnimationFrame(frame) : 0;
     const t = now / 1000;
-    if (swayEl && !reduceMotion) sway(swayEl, t);
+    if (!reduceMotion) sway(swayEl, t);
     updateBubble(t);
   }
 
