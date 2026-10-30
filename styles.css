@@ -297,6 +297,7 @@ h1, h2 {
 .project-game { --project: #6EE7A8; }
 .project-kostrzyn { --project: #FFA583; }
 .project-elliott { --project: #8FB4FF; }
+.project-whybox { --project: #F4A9C8; }
 
 .project-shot { display: block; flex: 0 0 300px; }
 .project-shot img { display: block; width: 100%; height: 100%; min-height: 176px; aspect-ratio: 8 / 5; object-fit: cover; }
@@ -306,7 +307,7 @@ h1, h2 {
 .project-copy h3 { margin: 6px 0 0; font-size: clamp(24px, 2.4vw, 32px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; color: var(--ink); }
 .project-copy p { margin: 8px 0 0; max-width: 520px; font-size: 15px; line-height: 1.5; color: var(--body); }
 
-.project-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 20px clamp(20px, 2.5vw, 32px); }
+.project-links { flex: 0 0 auto; width: 176px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 20px clamp(20px, 2.5vw, 32px); }
 
 /* Corporate: white band using yagalabs.io's light palette */
 
@@ -379,7 +380,7 @@ h1, h2 {
   .corporate-inner { grid-template-columns: minmax(0, 1fr); }
   .corporate-broom { width: min(100%, 320px); }
   .project-shot { flex: 1 1 100%; }
-  .project-links { padding-top: 0; }
+  .project-links { width: auto; flex-direction: row; padding-top: 0; }
   .hero-figure { order: 2; justify-content: flex-start; padding-left: 4%; padding-top: 150px; }
   .hero-copy { order: 1; padding: clamp(40px, 9vw, 64px) 0 0 0; }
   .yaga { height: min(560px, 135vw); }
