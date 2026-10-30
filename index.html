@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.4.0/dist/model-viewer.min.js"></script>
   <script src="main.js" defer></script>
 </head>
 <body>
@@ -44,7 +45,17 @@
 
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-bar"></span><span>Yaga.sh · Agentic products</span></div>
-          <h1>She complains about AI. Then she <span class="accent">ships&nbsp;it.</span></h1>
+          <div class="hero-title">
+            <model-viewer class="hero-broom"
+                          src="assets/yaga-logo-dark.glb"
+                          alt="3D Yaga logo, slowly rotating: a birch broom with a red binding forms the slash in a &lt;/&gt; code tag"
+                          camera-orbit="0deg 82deg auto"
+                          rotation-per-second="30deg"
+                          auto-rotate-delay="0"
+                          interaction-prompt="none"
+                          loading="eager"></model-viewer>
+            <h1>She complains about AI. Then she <span class="accent">ships&nbsp;it.</span></h1>
+          </div>
           <p class="lead">Yaga.sh builds agentic products and <span class="highlight">interfaces that explain themselves</span>. Pani Yaga is the studio's conscience. She has opinions about your model, and she's usually right.</p>
           <div class="actions">
             <a href="https://game.yaga.sh" class="btn btn-dark">Play a game</a>

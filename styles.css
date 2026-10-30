@@ -180,6 +180,12 @@ a { color: var(--ink); }
 
 .hero-copy { min-width: 0; padding: clamp(48px, 6vw, 96px) 0; }
 
+.hero-title { display: flex; align-items: center; gap: clamp(12px, 1.5vw, 24px); margin-top: 12px; }
+.hero-title h1 { margin: 0; min-width: 0; }
+
+.hero-broom { flex: none; width: clamp(72px, 7vw, 120px); height: clamp(72px, 7vw, 120px); }
+.hero-broom::part(default-progress-bar) { display: none; }
+
 .eyebrow {
   display: flex;
   align-items: center;

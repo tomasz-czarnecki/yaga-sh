@@ -117,3 +117,5 @@ function startHero(hero) {
 }
 
 document.querySelectorAll('.hero').forEach(startHero);
+
+if (!reduceMotion) document.querySelector('.hero-broom').setAttribute('auto-rotate', '');
