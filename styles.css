@@ -273,6 +273,23 @@ h1, h2 {
 
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
 
+/* Corporate: white band using yagalabs.io's light palette */
+
+.corporate {
+  --bg: #FFFFFF;
+  --ink: #161514;
+  --body: #3A3733;
+  --muted: #6A655D;
+  --accent: #991C18;
+  background: var(--bg);
+}
+
+.corporate-inner {
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: clamp(80px, 10vw, 144px) var(--gutter);
+}
+
 /* Contact */
 
 .contact { scroll-margin-top: var(--header-h); border-top: 1px solid var(--line); }
