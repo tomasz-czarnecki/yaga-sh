@@ -119,3 +119,7 @@ function startHero(hero) {
 document.querySelectorAll('.hero').forEach(startHero);
 
 if (!reduceMotion) document.querySelector('.hero-broom').setAttribute('auto-rotate', '');
+
+const siteMenu = document.querySelector('.site-menu');
+document.addEventListener('click', (e) => { if (!siteMenu.contains(e.target)) siteMenu.open = false; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') siteMenu.open = false; });
