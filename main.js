@@ -1,4 +1,4 @@
-/** Pani Yaga: rise-in on load, idle sway, and a speech bubble that types her lines. */
+/** Miss Yaga: rise-in on load, idle sway, and a speech bubble that types her lines. */
 
 const LINES = [
   'Three hundred years I read tea leaves. Now they call it a confidence interval.',
