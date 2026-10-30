@@ -118,7 +118,7 @@ function startHero(hero) {
 
 document.querySelectorAll('.hero').forEach(startHero);
 
-if (!reduceMotion) document.querySelector('.hero-broom').setAttribute('auto-rotate', '');
+if (!reduceMotion) document.querySelectorAll('model-viewer').forEach((el) => el.setAttribute('auto-rotate', ''));
 
 const siteMenu = document.querySelector('.site-menu');
 document.addEventListener('click', (e) => { if (!siteMenu.contains(e.target)) siteMenu.open = false; });

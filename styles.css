@@ -150,7 +150,7 @@ a { color: var(--ink); }
 
 .hero-figure {
   order: 2;
-  align-self: end;
+  align-self: center;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
@@ -231,7 +231,8 @@ a { color: var(--ink); }
 .hero-title h1 { margin: 0; min-width: 0; }
 
 .hero-broom { flex: none; width: clamp(72px, 7vw, 120px); height: clamp(72px, 7vw, 120px); }
-.hero-broom::part(default-progress-bar) { display: none; }
+.hero-broom::part(default-progress-bar),
+.corporate-broom::part(default-progress-bar) { display: none; }
 
 .eyebrow {
   display: flex;
@@ -288,7 +289,13 @@ h1, h2 {
   max-width: calc(var(--max) + 2 * var(--gutter));
   margin: 0 auto;
   padding: clamp(80px, 10vw, 144px) var(--gutter);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
 }
+
+.corporate-broom { justify-self: center; width: min(100%, 480px); height: auto; aspect-ratio: 1; }
 
 /* Contact */
 
@@ -323,6 +330,11 @@ h1, h2 {
 
 /* Responsive */
 
+/* tall windows: the figure has hit its height cap, so centre it exactly beside the copy */
+@media (min-width: 861px) and (min-height: 1144px) {
+  .hero-figure { padding-top: 0; }
+}
+
 @media (max-width: 1100px) {
   .bubble-cloud { font-size: 14px; padding: 18px 26px 20px; }
   .bubble-text { top: 18px; left: 26px; right: 26px; }
@@ -330,6 +342,8 @@ h1, h2 {
 
 @media (max-width: 860px) {
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .corporate-inner { grid-template-columns: minmax(0, 1fr); }
+  .corporate-broom { width: min(100%, 320px); }
   .hero-figure { order: 2; justify-content: flex-start; padding-left: 4%; padding-top: 150px; }
   .hero-copy { order: 1; padding: clamp(40px, 9vw, 64px) 0 0 0; }
   .yaga { height: min(560px, 135vw); }
