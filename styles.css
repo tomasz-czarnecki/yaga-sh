@@ -83,7 +83,7 @@ a { color: var(--ink); }
 }
 
 .brand { display: flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: none; color: var(--ink); }
-.brand-mark { width: 14px; height: 14px; background: var(--accent); flex: none; }
+.brand-mark { display: block; width: 36px; height: 36px; flex: none; }
 .brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 
 /* Hero */
@@ -242,7 +242,7 @@ h1, h2 {
 }
 
 .footer-brand { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--ink); }
-.footer-mark { width: 10px; height: 10px; background: var(--accent); }
+.footer-mark { display: block; width: 24px; height: 24px; flex: none; }
 
 .copyright {
   font-family: var(--mono);
