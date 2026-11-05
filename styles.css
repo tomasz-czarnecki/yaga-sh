@@ -279,35 +279,58 @@ h1, h2 {
 
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
 
-/* Projects: wide containers, one per experiment */
+/* Project accents, shared by the showcase panels */
 
-.projects { border-top: 1px solid var(--line); }
-
-.projects-inner {
-  max-width: calc(var(--max) + 2 * var(--gutter));
-  margin: 0 auto;
-  padding: clamp(48px, 5vw, 72px) var(--gutter);
-}
-
-.projects h2 { margin: 0; max-width: none; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; }
-
-.project-list { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; }
-.project { display: flex; flex-wrap: wrap; align-items: stretch; background: var(--surface); border: 1px solid var(--line); }
 .project-pixel { --project: #C9A6FF; }
 .project-game { --project: #6EE7A8; }
 .project-kostrzyn { --project: #FFA583; }
 .project-elliott { --project: #8FB4FF; }
 .project-whybox { --project: #F4A9C8; }
-
-.project-shot { display: block; flex: 0 0 300px; }
-.project-shot img { display: block; width: 100%; height: 100%; min-height: 176px; aspect-ratio: 8 / 5; object-fit: cover; }
-
-.project-copy { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding: 20px clamp(20px, 2.5vw, 32px); }
 .project-number { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; color: var(--project); }
-.project-copy h3 { margin: 6px 0 0; font-size: clamp(24px, 2.4vw, 32px); font-weight: 500; line-height: 1.1; letter-spacing: -0.025em; color: var(--ink); }
-.project-copy p { margin: 8px 0 0; max-width: 520px; font-size: 15px; line-height: 1.5; color: var(--body); }
 
-.project-links { flex: 0 0 auto; width: 176px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 20px clamp(20px, 2.5vw, 32px); }
+/* Showcase: one big image panel per project, copy over the dark left side */
+
+.showcase { border-top: 1px solid var(--line); }
+
+.showcase-inner {
+  max-width: calc(var(--max) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: clamp(48px, 5vw, 72px) var(--gutter);
+}
+
+.showcase h2 { margin: 0; max-width: none; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; }
+
+.showcase-list { display: flex; flex-direction: column; gap: 24px; margin-top: 32px; }
+
+.feature { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+.feature::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgb(12 11 10 / 0.9) 0%, rgb(12 11 10 / 0.65) 32%, rgb(12 11 10 / 0) 62%);
+}
+
+.feature-shot { display: block; }
+.feature-shot img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; object-position: var(--focus, 50% 50%); transition: transform 700ms var(--ease-out); }
+.feature.project-pixel, .feature.project-game, .feature.project-elliott, .feature.project-whybox { --focus: 85% 50%; }
+
+.feature-copy {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  bottom: 0;
+  max-width: 480px;
+  padding: clamp(24px, 4vw, 56px);
+}
+.feature-copy h3 { margin: 8px 0 0; font-size: var(--fs-display); font-weight: 500; line-height: 1.02; letter-spacing: -0.035em; color: var(--ink); }
+.feature-copy p { margin: 14px 0 0; font-size: var(--fs-lead); line-height: 1.5; color: var(--body); }
+.feature-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+
+@media (hover: hover) {
+  .feature:hover .feature-shot img { transform: scale(1.03); }
+}
 
 /* Corporate: white band using yagalabs.io's light palette */
 
@@ -379,8 +402,9 @@ h1, h2 {
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .corporate-inner { grid-template-columns: minmax(0, 1fr); }
   .corporate-broom { width: min(100%, 320px); }
-  .project-shot { flex: 1 1 100%; }
-  .project-links { width: auto; flex-direction: row; padding-top: 0; }
+  .feature::before { content: none; }
+  .feature-shot img { aspect-ratio: 4 / 3; }
+  .feature-copy { position: static; max-width: none; padding: 20px 20px 24px; }
   .hero-figure { order: 2; justify-content: flex-start; padding-left: 4%; padding-top: 150px; }
   .hero-copy { order: 1; padding: clamp(40px, 9vw, 64px) 0 0 0; }
   .yaga { height: min(560px, 135vw); }
