@@ -118,6 +118,43 @@ function startHero(hero) {
 
 document.querySelectorAll('.hero').forEach(startHero);
 
+/** Crossfades a project carousel every 5 s; its squares show and pick the current picture. */
+function startCarousel(carousel) {
+  const slides = [...carousel.querySelectorAll('img')];
+  const nav = document.createElement('div');
+  nav.className = 'carousel-dots';
+  let current = 0;
+  let timer = 0;
+
+  const dots = slides.map((_, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `Show picture ${i + 1} of ${slides.length}`);
+    dot.addEventListener('click', () => { show(i); restart(); });
+    nav.append(dot);
+    return dot;
+  });
+  carousel.append(nav);
+
+  function show(i) {
+    slides[current].classList.remove('is-active');
+    dots[current].removeAttribute('aria-current');
+    current = i;
+    slides[current].classList.add('is-active');
+    dots[current].setAttribute('aria-current', 'true');
+  }
+
+  function restart() {
+    clearInterval(timer);
+    if (!reduceMotion) timer = setInterval(() => show((current + 1) % slides.length), 5000);
+  }
+
+  show(0);
+  restart();
+}
+
+document.querySelectorAll('.feature-carousel').forEach(startCarousel);
+
 if (!reduceMotion) document.querySelectorAll('model-viewer').forEach((el) => el.setAttribute('auto-rotate', ''));
 
 const siteMenu = document.querySelector('.site-menu');
