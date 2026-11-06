@@ -1,4 +1,4 @@
-/** Miss Yaga nodding and gesturing while her agents, one per project, circle around her. Loads when the section is near. */
+/** Miss Yaga directing her agents, one per project, while her broomstick flies loops around her. Loads when the section is near. */
 
 const AGENTS = [
   { color: '#FFA583', radius: 0.62, height: 0.78, speed: 0.22, phase: 0.0 },
@@ -11,6 +11,7 @@ const AGENTS = [
 ];
 const AGENT_SIZE = 0.055;
 const MODEL = 'assets/yaga-agents.glb';
+const BROOM = { model: 'assets/broom.glb', scale: 0.3, radius: 0.9, height: 0.62, speed: 0.11, bank: 0.35 };
 const MOVE = 'agree.001';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -90,7 +91,13 @@ async function start(stage) {
   const agents = AGENTS.map((a) => ({ ...a, ...makeAgent(THREE, a.color, body, eyeWhite, eyeDark) }));
   agents.forEach((a) => scene.add(a.root));
 
-  const gltf = await new GLTFLoader().loadAsync(MODEL);
+  const loader = new GLTFLoader();
+  const [gltf, broomGltf] = await Promise.all([loader.loadAsync(MODEL), loader.loadAsync(BROOM.model)]);
+  const broom = new THREE.Group();
+  broomGltf.scene.rotation.x = Math.PI / 2;
+  broomGltf.scene.scale.setScalar(BROOM.scale);
+  broom.add(broomGltf.scene);
+  scene.add(broom);
   const yaga = gltf.scene;
   yaga.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
   scene.add(yaga);
@@ -107,7 +114,18 @@ async function start(stage) {
   new ResizeObserver(resize).observe(stage);
   resize();
 
+  const ahead = new THREE.Vector3();
+
+  /** Where the broom is at time t: a slow loop around her, bobbing up and down. */
+  function broomAt(t, out) {
+    const angle = t * BROOM.speed * Math.PI * 2;
+    return out.set(Math.cos(angle) * BROOM.radius, BROOM.height + Math.sin(t * 1.3) * 0.08, Math.sin(angle) * BROOM.radius * 0.6);
+  }
+
   function place(t) {
+    broomAt(t, broom.position);
+    broom.lookAt(broomAt(t + 0.05, ahead));
+    broom.rotateZ(-BROOM.bank);
     for (const a of agents) {
       const angle = a.phase + t * a.speed * Math.PI * 2;
       a.root.position.set(Math.cos(angle) * a.radius, a.height + Math.sin(t * 1.7 + a.phase) * 0.03, Math.sin(angle) * a.radius * 0.6);
