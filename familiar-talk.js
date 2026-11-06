@@ -85,20 +85,20 @@ export function makeTalk(THREE, stage, agents) {
     her.until = until + YAGA_AFTER;
   }
 
-  /** Someone disturbed the agents: she tells them off, they squeak in panic. */
+  /** Someone disturbed an agent: she tells you off. */
   function scold(t, until) {
     her.line = pick(SCOLD_LINES, her.line);
     her.from = t + 0.3;
     her.until = until + YAGA_AFTER;
-    const loud = stage.getBoundingClientRect().width < 600 ? 2 : 4;
-    const order = bubbles.map((b, i) => [Math.random(), i]).sort((x, y) => x[0] - y[0]).map(([, i]) => i);
-    bubbles.forEach((b, i) => {
-      const panics = order.indexOf(i) < loud;
-      b.line = pick(PANIC_LINES);
-      b.from = panics ? t + Math.random() * 0.4 : until;
-      b.until = panics ? b.from + 1.4 : until;
-      b.next = until + 1 + Math.random() * 2;
-    });
+  }
+
+  /** The touched agent squeaks as it runs. */
+  function panic(i, t) {
+    const b = bubbles[i];
+    b.line = pick(PANIC_LINES, b.line);
+    b.from = t;
+    b.until = t + 1.4;
+    b.next = b.until + 1 + Math.random() * 2;
   }
 
   /** Types, shows and places every bubble for time t. `checking` is the agent she is talking to, if any. */
@@ -137,5 +137,5 @@ export function makeTalk(THREE, stage, agents) {
     });
   }
 
-  return { update, speak, scold };
+  return { update, speak, scold, panic };
 }
