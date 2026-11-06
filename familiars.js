@@ -133,7 +133,7 @@ async function start(stage) {
     let best = null, bestGap = -1;
     for (let i = 0; i < 40; i++) {
       const p = new THREE.Vector3((Math.random() * 2 - 1) * layoutWidth, agent.height, -0.5 + Math.random() * 0.95);
-      if (p.distanceTo(agent.spot) < Math.min(FLEE.least, layoutWidth * 0.6)) continue;
+      if (Math.abs(p.x - agent.spot.x) < Math.min(FLEE.least, layoutWidth * 0.6)) continue;  // sideways, so the hop shows on screen
       const gap = Math.min(p.distanceTo(yaga.position) - 0.2, ...agents.filter((o) => o !== agent).map((o) => p.distanceTo(o.spot)));
       if (gap > bestGap) { best = p; bestGap = gap; }
     }
