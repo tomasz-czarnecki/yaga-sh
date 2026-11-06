@@ -16,6 +16,7 @@ const CHECK_SECONDS = 2.4;  // how long she nods at each agent
 const BESIDE = { x: 0.26, z: -0.16 };  // where she stands to check an agent: beside it on the middle's side, a little behind
 const TURN_SPEED = 7;       // radians per second
 const FADE = 0.25;
+const SCATTER = { seconds: 3.5, flee: 0.7, back: 2.4, distance: 0.9 };  // the agents run off, wait, then sneak back
 const CAMERA = { fov: 30, distance: 3.1, farthest: 4.6, height: 1.6, lookY: 0.55 };  // narrow stages pull back towards 'farthest'
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -114,15 +115,33 @@ async function start(stage) {
   new ResizeObserver(resize).observe(stage);
   resize();
 
-  const her = { at: 0, step: 1, mode: 'check', until: CHECK_SECONDS, goal: new THREE.Vector3() };
+  const her = { at: 0, step: 1, mode: 'check', until: CHECK_SECONDS, goal: new THREE.Vector3(), resume: 'check' };
+  const scatter = { from: -99 };
   const standAt = (a, out) => out.set(a.spot.x - (Math.sign(a.spot.x) || her.step) * BESIDE.x, 0, a.spot.z + BESIDE.z);
   standAt(agents[0], yaga.position);
   yaga.rotation.y = Math.atan2(agents[0].spot.x - yaga.position.x, agents[0].spot.z - yaga.position.z);
   play('agree');
   talk.speak(0, CHECK_SECONDS);
 
+  /** Someone disturbed the agents: they run away, and she turns round to tell you off. */
+  function disturb(t) {
+    if (t - scatter.from < SCATTER.seconds) return;
+    scatter.from = t;
+    her.resume = her.mode;
+    her.mode = 'angry';
+    play('angry_01');
+    talk.scold(t, t + SCATTER.seconds);
+  }
+
   /** Walks her along the line of agents and back, stopping to nod at each one. */
   function walk(t, dt) {
+    if (her.mode === 'angry') {
+      yaga.rotation.y += turnTo(yaga.rotation.y, 0) * Math.min(1, dt * TURN_SPEED);
+      if (t - scatter.from < SCATTER.seconds) return;
+      her.mode = her.resume === 'check' ? 'check' : 'walk';
+      her.until = t + 0.6;
+      play(her.mode === 'check' ? 'agree' : 'walk');
+    }
     const a = agents[her.at];
     if (her.mode === 'check') {
       const face = Math.atan2(a.spot.x - yaga.position.x, a.spot.z - yaga.position.z);
@@ -149,12 +168,21 @@ async function start(stage) {
     yaga.position.z += (dz / dist) * step;
   }
 
-  /** The agents hover at their spots and wiggle as they work; the one she is scolding looks startled. */
+  const away = new THREE.Vector3();
+  const ease = (x) => x * x * (3 - 2 * x);
+
+  /** The agents hover at their spots and wiggle as they work; the one she is scolding looks startled. When disturbed they run from her and sneak back. */
   function work(t) {
     const scolded = her.mode === 'check' ? agents[her.at] : null;
+    const e = t - scatter.from, fleeing = e < SCATTER.seconds;
+    const amount = fleeing ? ease(Math.min(1, e / SCATTER.flee)) * (1 - ease(Math.max(0, (e - SCATTER.back) / (SCATTER.seconds - SCATTER.back)))) : 0;
     for (const a of agents) {
-      a.setFace(a === scolded ? 'oh' : a.face);
-      a.root.position.set(a.spot.x, a.spot.y + Math.abs(Math.sin(t * 5 + a.phase)) * 0.03, a.spot.z);
+      a.setFace(fleeing ? 'oh' : a === scolded ? 'oh' : a.face);
+      away.set(a.spot.x - yaga.position.x, 0, a.spot.z - yaga.position.z);
+      if (away.lengthSq() < 0.01) away.set(a.phase % 2 ? 1 : -1, 0, 0);
+      away.normalize().multiplyScalar(SCATTER.distance * amount);
+      const hop = fleeing ? Math.abs(Math.sin(e * 16 + a.phase)) * 0.08 * amount : Math.abs(Math.sin(t * 5 + a.phase)) * 0.03;
+      a.root.position.set(a.spot.x + away.x, a.spot.y + hop, a.spot.z + away.z);
       a.root.lookAt(camera.position.x, a.root.position.y, camera.position.z);
       a.root.rotateZ(Math.sin(t * 7 + a.phase) * 0.12);
       const blink = t > a.blinkAt && t < a.blinkAt + 0.14;
@@ -179,6 +207,17 @@ async function start(stage) {
     headBone.getWorldPosition(head);
     talk.update(t, camera, head.setY(head.y + 0.1), her.mode === 'check' ? agents[her.at] : null);
     renderer.render(scene, camera);
+    lastT = t;
+  }
+
+  let lastT = 0;
+  if (!reduceMotion) {
+    const poke = document.createElement('button');
+    poke.type = 'button';
+    poke.className = 'familiars-poke';
+    poke.textContent = 'Disturb them';
+    stage.append(poke);
+    stage.addEventListener('click', () => disturb(lastT));
   }
 
   if (reduceMotion) mixer.update(actions.agree.getClip().duration * 0.5);

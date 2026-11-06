@@ -324,6 +324,25 @@ h1, h2 {
 .familiars-stage { position: relative; height: clamp(420px, 42vw, 560px); margin-top: 8px; opacity: 0; transition: opacity 800ms ease; }
 .familiars-stage.is-ready { opacity: 1; }
 .familiars-stage canvas { display: block; width: 100%; height: 100%; }
+.familiars-stage.is-ready { cursor: pointer; }
+.familiars-poke {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 16px;
+  translate: -50% 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  background: rgb(12 11 10 / 0.7);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+@media (hover: hover) { .familiars-poke:hover { border-color: var(--accent); color: var(--accent); } }
 .familiars-talk { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .familiar-cloud, .familiar-code { position: absolute; left: 0; top: 0; opacity: 0; transition: opacity 200ms ease; white-space: nowrap; font-family: var(--mono); }
 .familiar-cloud.is-on, .familiar-code.is-on { opacity: 1; }

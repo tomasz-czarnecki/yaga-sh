@@ -14,6 +14,15 @@ const YAGA_LINES = [
   'assert ship_it',
 ];
 
+const SCOLD_LINES = [
+  "Don't disturb them. They're working!",
+  'Hey! Leave my agents alone.',
+  'They were busy. Now look.',
+  'Who let you in here?',
+];
+
+const PANIC_LINES = ['AAAH!', 'Ctrl+C!', 'SIGINT!', 'eek!', 'panic()', 'git stash!', 'run!'];
+
 const CODE_LINES = [
   'await broom.fly()',
   'if (bug) swat(bug);',
@@ -76,6 +85,22 @@ export function makeTalk(THREE, stage, agents) {
     her.until = until + YAGA_AFTER;
   }
 
+  /** Someone disturbed the agents: she tells them off, they squeak in panic. */
+  function scold(t, until) {
+    her.line = pick(SCOLD_LINES, her.line);
+    her.from = t + 0.3;
+    her.until = until + YAGA_AFTER;
+    const loud = stage.getBoundingClientRect().width < 600 ? 2 : 4;
+    const order = bubbles.map((b, i) => [Math.random(), i]).sort((x, y) => x[0] - y[0]).map(([, i]) => i);
+    bubbles.forEach((b, i) => {
+      const panics = order.indexOf(i) < loud;
+      b.line = pick(PANIC_LINES);
+      b.from = panics ? t + Math.random() * 0.4 : until;
+      b.until = panics ? b.from + 1.4 : until;
+      b.next = until + 1 + Math.random() * 2;
+    });
+  }
+
   /** Types, shows and places every bubble for time t. `checking` is the agent she is talking to, if any. */
   function update(t, camera, head, checking) {
     const { width, height } = stage.getBoundingClientRect();
@@ -84,7 +109,7 @@ export function makeTalk(THREE, stage, agents) {
     const herOn = t < her.until;
     yaga.classList.toggle('is-on', herOn);
     if (herOn) {
-      yaga.textContent = her.line.slice(0, Math.ceil((t - her.from) * TYPE_SPEED));
+      yaga.textContent = her.line.slice(0, Math.max(0, Math.ceil((t - her.from) * TYPE_SPEED)));
       const [x, y] = toScreen(head, camera, width, height);
       const left = clamp(x, 0, width - yaga.offsetWidth - 26);
       yaga.style.transform = `translate(${left.toFixed(1)}px, ${y.toFixed(1)}px)`;
@@ -102,7 +127,7 @@ export function makeTalk(THREE, stage, agents) {
         b.next = b.until + 1.5 + Math.random() * 4;
         talking++;
       }
-      const on = t < b.until;
+      const on = t >= b.from && t < b.until;
       b.el.classList.toggle('is-on', on);
       if (!on) return;
       b.el.textContent = b.line.slice(0, Math.ceil((t - b.from) * TYPE_SPEED));
@@ -112,5 +137,5 @@ export function makeTalk(THREE, stage, agents) {
     });
   }
 
-  return { update, speak };
+  return { update, speak, scold };
 }
