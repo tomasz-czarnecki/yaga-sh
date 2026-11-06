@@ -251,6 +251,7 @@ a { color: var(--ink); }
   color: var(--muted);
 }
 .eyebrow-bar { width: 24px; height: 2px; background: var(--accent); flex: none; }
+.strike { text-decoration: line-through 2px var(--accent); }
 
 h1, h2 {
   font-weight: 500;
