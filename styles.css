@@ -349,7 +349,7 @@ h1, h2 {
 
 /* Showcase: one big image panel per project, copy over the dark left side */
 
-.showcase { border-top: 1px solid var(--line); }
+.showcase { scroll-margin-top: var(--header-h); border-top: 1px solid var(--line); }
 
 .showcase-inner {
   max-width: calc(var(--max) + 2 * var(--gutter));
