@@ -351,11 +351,12 @@ h1, h2 {
   z-index: 2;
   left: 0;
   bottom: 0;
-  max-width: 480px;
+  max-width: 520px;
   padding: clamp(24px, 4vw, 56px);
 }
 .feature-copy h3 { margin: 8px 0 0; font-size: var(--fs-display); font-weight: 500; line-height: 1.02; letter-spacing: -0.035em; color: var(--ink); }
 .feature-crest { display: inline-block; width: auto; height: 1.1em; margin-right: 0.22em; vertical-align: -0.16em; }
+.feature-title-alt { display: block; margin-top: 10px; font-size: max(18px, 0.42em); font-weight: 400; letter-spacing: 0.12em; color: var(--body); }
 .feature-copy > p { margin: 14px 0 0; font-size: var(--fs-lead); line-height: 1.5; color: var(--body); }
 .feature-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
 
