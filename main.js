@@ -4,7 +4,7 @@ const LINES = [
   'Three hundred years I read tea leaves. Now they call it a confidence interval.',
   'Everyone talks to AI now. Nobody talks to their friends.',
   'Your model is 73% sure. I am 100% sure it’s wrong.',
-  'Four hundred years of agents. Back then we called them familiars.',
+  'Three hundred years of agents. Back then we called them familiars.',
   'Your agent forgot the task? My raven never did.',
 ];
 const GLYPHS = '#$%&@*!?≈∑∆∫λθ∂±∞§';
