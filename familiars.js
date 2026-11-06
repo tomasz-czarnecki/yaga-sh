@@ -1,4 +1,6 @@
-/** Miss Yaga walks from agent to agent, broomstick in hand, checking on their work. Loads when the section is near. */
+/** Miss Yaga walks from agent to agent, broomstick in hand, telling them to work faster. Loads when the section is near. */
+
+import { makeTalk } from './familiar-talk.js';
 
 const AGENT_COLORS = ['#FFA583', '#E9C46A', '#C9A6FF', '#6EE7A8', '#8FB4FF', '#F2A0A8', '#F4A9C8'];
 const AGENT_HEIGHTS = [0.55, 0.32, 0.62, 0.4, 0.58, 0.3, 0.5];
@@ -12,7 +14,7 @@ const CHECK_SECONDS = 2.4;  // how long she nods at each agent
 const BESIDE = { x: 0.26, z: -0.16 };  // where she stands to check an agent: beside it on the middle's side, a little behind
 const TURN_SPEED = 7;       // radians per second
 const FADE = 0.25;
-const CAMERA = { fov: 30, distance: 3.1, farthest: 4.6, height: 1.6, lookY: 0.72 };  // narrow stages pull back towards 'farthest'
+const CAMERA = { fov: 30, distance: 3.1, farthest: 4.6, height: 1.6, lookY: 0.55 };  // narrow stages pull back towards 'farthest'
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -91,7 +93,7 @@ async function start(stage) {
   const body = roundedCube(THREE, 0.38, 6);
   const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14), new THREE.MeshStandardMaterial({ color: '#eeedf3', roughness: 0.25 }));
   const eyeDark = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), new THREE.MeshStandardMaterial({ color: '#030305', roughness: 0.2 }));
-  const agents = AGENT_COLORS.map((color, i) => ({ height: AGENT_HEIGHTS[i], phase: i * 1.3, spot: new THREE.Vector3(), ...makeAgent(THREE, color, body, eyeWhite, eyeDark) }));
+  const agents = AGENT_COLORS.map((color, i) => ({ color, height: AGENT_HEIGHTS[i], phase: i * 1.3, spot: new THREE.Vector3(), ...makeAgent(THREE, color, body, eyeWhite, eyeDark) }));
   agents.forEach((a) => scene.add(a.root));
 
   const loader = new GLTFLoader();
@@ -106,6 +108,9 @@ async function start(stage) {
   yaga.getObjectByName('mixamorigRightHand').add(grip);
   const shadow = makeShadow(THREE);
   scene.add(yaga, shadow);
+  const headBone = yaga.getObjectByName('mixamorigHead');
+  const head = new THREE.Vector3();
+  const talk = makeTalk(THREE, stage, agents);
 
   const mixer = new THREE.AnimationMixer(yaga);
   const actions = Object.fromEntries(gltf.animations.map((c) => [c.name.replace(/\.\d+$/, ''), mixer.clipAction(c)]));
@@ -147,6 +152,7 @@ async function start(stage) {
   standAt(agents[0], yaga.position);
   yaga.rotation.y = Math.atan2(agents[0].spot.x - yaga.position.x, agents[0].spot.z - yaga.position.z);
   play('agree');
+  talk.speak(0, CHECK_SECONDS);
 
   /** Walks her along the line of agents and back, stopping to nod at each one. */
   function walk(t, dt) {
@@ -169,6 +175,7 @@ async function start(stage) {
       her.mode = 'check';
       her.until = t + CHECK_SECONDS;
       play('agree');
+      talk.speak(t, her.until);
       return;
     }
     yaga.position.x += (dx / dist) * step;
@@ -200,6 +207,8 @@ async function start(stage) {
     work(t);
     shadow.position.set(yaga.position.x, 0.002, yaga.position.z);
     mixer.update(dt);
+    headBone.getWorldPosition(head);
+    talk.update(t, camera, head.setY(head.y + 0.1), her.mode === 'check' ? agents[her.at] : null);
     renderer.render(scene, camera);
   }
 
