@@ -1,9 +1,11 @@
 /** Miss Yaga walks from agent to agent, broomstick in hand, telling them to work faster. Loads when the section is near. */
 
 import { makeTalk } from './familiar-talk.js';
+import { roundedCube, makeAgent } from './familiar-agent.js';
 
 const AGENT_COLORS = ['#FFA583', '#E9C46A', '#C9A6FF', '#6EE7A8', '#8FB4FF', '#F2A0A8', '#F4A9C8'];
 const AGENT_HEIGHTS = [0.55, 0.32, 0.62, 0.4, 0.58, 0.3, 0.5];
+const AGENT_FACES = ['grin', 'grumpy', 'smile', 'snarl', 'grin', 'smile', 'grumpy'];
 const AGENT_SIZE = 0.075;
 const MODEL = 'assets/yaga-agents.glb';
 const BROOM = 'assets/broom.glb';
@@ -17,39 +19,6 @@ const FADE = 0.25;
 const CAMERA = { fov: 30, distance: 3.1, farthest: 4.6, height: 1.6, lookY: 0.55 };  // narrow stages pull back towards 'farthest'
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/** A cube 2 across with rounded corners: roundness 0 is sharp, 1 is a ball. */
-function roundedCube(THREE, roundness, segments) {
-  const g = new THREE.BoxGeometry(2, 2, 2, segments, segments, segments);
-  const pos = g.attributes.position, nor = g.attributes.normal, inner = 1 - roundness;
-  const p = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    p.fromBufferAttribute(pos, i);
-    c.set(Math.min(Math.max(p.x, -inner), inner), Math.min(Math.max(p.y, -inner), inner), Math.min(Math.max(p.z, -inner), inner));
-    n.subVectors(p, c).normalize();
-    p.copy(c).addScaledVector(n, roundness);
-    pos.setXYZ(i, p.x, p.y, p.z);
-    nor.setXYZ(i, n.x, n.y, n.z);
-  }
-  return g;
-}
-
-/** One agent: a soft coloured box with two eyes, like the black box from the Yaga game. */
-function makeAgent(THREE, color, body, eyeWhite, eyeDark) {
-  const root = new THREE.Group();
-  root.add(new THREE.Mesh(body, new THREE.MeshStandardMaterial({ color, roughness: 0.55 })));
-  const eyes = [-1, 1].map((side) => {
-    const eye = new THREE.Group();
-    eye.position.set(side * 0.42, 0.2, 0.86);
-    const pupil = new THREE.Mesh(eyeDark.geometry, eyeDark.material);
-    pupil.position.set(0, -0.02, 0.2);
-    eye.add(new THREE.Mesh(eyeWhite.geometry, eyeWhite.material), pupil);
-    root.add(eye);
-    return eye;
-  });
-  root.scale.setScalar(AGENT_SIZE);
-  return { root, eyes, blinkAt: 1 + Math.random() * 4 };
-}
 
 /** A soft dark ellipse for under her feet. */
 function makeShadow(THREE) {
@@ -91,9 +60,7 @@ async function start(stage) {
   scene.add(key, rim);
 
   const body = roundedCube(THREE, 0.38, 6);
-  const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14), new THREE.MeshStandardMaterial({ color: '#eeedf3', roughness: 0.25 }));
-  const eyeDark = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), new THREE.MeshStandardMaterial({ color: '#030305', roughness: 0.2 }));
-  const agents = AGENT_COLORS.map((color, i) => ({ color, height: AGENT_HEIGHTS[i], phase: i * 1.3, spot: new THREE.Vector3(), ...makeAgent(THREE, color, body, eyeWhite, eyeDark) }));
+  const agents = AGENT_COLORS.map((color, i) => ({ color, height: AGENT_HEIGHTS[i], phase: i * 1.3, spot: new THREE.Vector3(), blinkAt: 1 + Math.random() * 4, ...makeAgent(THREE, color, body, AGENT_FACES[i], AGENT_SIZE) }));
   agents.forEach((a) => scene.add(a.root));
 
   const loader = new GLTFLoader();
@@ -128,7 +95,7 @@ async function start(stage) {
   /** Lines the agents up across the stage's width, alternating back and front. */
   function layout(aspect, distance) {
     const halfWidth = Math.tan((CAMERA.fov / 2) * Math.PI / 180) * distance * aspect;
-    const rx = Math.min(1.25, halfWidth * 0.7);
+    const rx = halfWidth * 0.8;
     agents.forEach((a, i) => {
       a.spot.set(-rx + (2 * rx * i) / (agents.length - 1), a.height, i % 2 ? -0.45 : 0.4);
     });
@@ -182,9 +149,11 @@ async function start(stage) {
     yaga.position.z += (dz / dist) * step;
   }
 
-  /** The agents hover at their spots and wiggle as they work, eyes on the viewer. */
+  /** The agents hover at their spots and wiggle as they work; the one she is scolding looks startled. */
   function work(t) {
+    const scolded = her.mode === 'check' ? agents[her.at] : null;
     for (const a of agents) {
+      a.setFace(a === scolded ? 'oh' : a.face);
       a.root.position.set(a.spot.x, a.spot.y + Math.abs(Math.sin(t * 5 + a.phase)) * 0.03, a.spot.z);
       a.root.lookAt(camera.position.x, a.root.position.y, camera.position.z);
       a.root.rotateZ(Math.sin(t * 7 + a.phase) * 0.12);
