@@ -251,6 +251,7 @@ a { color: var(--ink); }
   color: var(--muted);
 }
 .eyebrow-bar { width: 24px; height: 2px; background: var(--accent); flex: none; }
+.showcase .eyebrow + h2, .familiars .eyebrow + h2 { margin-top: 12px; }
 .strike { text-decoration: line-through 2px var(--accent); }
 
 h1, h2 {
