@@ -1,18 +1,18 @@
-/** Miss Yaga directing her agents, one per project, while her broomstick flies loops around her. Loads when the section is near. */
+/** Miss Yaga walks from agent to agent, broomstick in hand, checking on their work. Loads when the section is near. */
 
-const AGENTS = [
-  { color: '#FFA583', radius: 0.62, height: 0.78, speed: 0.22, phase: 0.0 },
-  { color: '#E9C46A', radius: 0.72, height: 0.30, speed: 0.17, phase: 0.9 },
-  { color: '#C9A6FF', radius: 0.58, height: 0.55, speed: 0.26, phase: 1.8 },
-  { color: '#6EE7A8', radius: 0.78, height: 0.62, speed: 0.15, phase: 2.7 },
-  { color: '#8FB4FF', radius: 0.66, height: 0.18, speed: 0.20, phase: 3.6 },
-  { color: '#F2A0A8', radius: 0.74, height: 0.92, speed: 0.18, phase: 4.5 },
-  { color: '#F4A9C8', radius: 0.60, height: 0.40, speed: 0.24, phase: 5.4 },
-];
-const AGENT_SIZE = 0.055;
+const AGENT_COLORS = ['#FFA583', '#E9C46A', '#C9A6FF', '#6EE7A8', '#8FB4FF', '#F2A0A8', '#F4A9C8'];
+const AGENT_HEIGHTS = [0.55, 0.32, 0.62, 0.4, 0.58, 0.3, 0.5];
+const AGENT_SIZE = 0.075;
 const MODEL = 'assets/yaga-agents.glb';
-const BROOM = { model: 'assets/broom.glb', scale: 0.3, radius: 0.9, height: 0.62, speed: 0.11, bank: 0.35 };
-const MOVE = 'agree.001';
+const BROOM = 'assets/broom.glb';
+// where the broom's grip sits in her right-hand bone, taken from the Yaga game (play/code/tools.js)
+const GRIP = { pos: [-0.0286, 0.0534, -0.0215], quat: [0.5843, 0, 0.3404, 0.7367], scale: 0.51149 };
+const WALK_SPEED = 0.562;   // model units per second that the walk clip covers, so her feet don't slide
+const CHECK_SECONDS = 2.4;  // how long she nods at each agent
+const BESIDE = { x: 0.26, z: -0.16 };  // where she stands to check an agent: beside it on the middle's side, a little behind
+const TURN_SPEED = 7;       // radians per second
+const FADE = 0.25;
+const CAMERA = { fov: 30, distance: 3.1, farthest: 4.6, height: 1.6, lookY: 0.72 };  // narrow stages pull back towards 'farthest'
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -35,15 +35,13 @@ function roundedCube(THREE, roundness, segments) {
 /** One agent: a soft coloured box with two eyes, like the black box from the Yaga game. */
 function makeAgent(THREE, color, body, eyeWhite, eyeDark) {
   const root = new THREE.Group();
-  const box = new THREE.Mesh(body, new THREE.MeshStandardMaterial({ color, roughness: 0.55 }));
-  root.add(box);
+  root.add(new THREE.Mesh(body, new THREE.MeshStandardMaterial({ color, roughness: 0.55 })));
   const eyes = [-1, 1].map((side) => {
     const eye = new THREE.Group();
     eye.position.set(side * 0.42, 0.2, 0.86);
-    const white = new THREE.Mesh(eyeWhite.geometry, eyeWhite.material);
     const pupil = new THREE.Mesh(eyeDark.geometry, eyeDark.material);
     pupil.position.set(0, -0.02, 0.2);
-    eye.add(white, pupil);
+    eye.add(new THREE.Mesh(eyeWhite.geometry, eyeWhite.material), pupil);
     root.add(eye);
     return eye;
   });
@@ -51,20 +49,37 @@ function makeAgent(THREE, color, body, eyeWhite, eyeDark) {
   return { root, eyes, blinkAt: 1 + Math.random() * 4 };
 }
 
+/** A soft dark ellipse for under her feet. */
+function makeShadow(THREE) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(0,0,0,0.55)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.36), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2;
+  return shadow;
+}
+
+/** Shortest signed turn from angle a to angle b. */
+function turnTo(a, b) {
+  return Math.atan2(Math.sin(b - a), Math.cos(b - a));
+}
+
 /** Builds the scene into the stage's canvas and animates it while it is on screen. */
 async function start(stage) {
   const THREE = await import('three');
   const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-  const canvas = stage.querySelector('canvas');
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const renderer = new THREE.WebGLRenderer({ canvas: stage.querySelector('canvas'), antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 20);
-  camera.position.set(0, 0.62, 2.6);
-  camera.lookAt(0, 0.48, 0);
+  const camera = new THREE.PerspectiveCamera(CAMERA.fov, 1, 0.05, 30);
 
   scene.add(new THREE.HemisphereLight('#f5e6d8', '#2a2017', 2.4));
   const key = new THREE.DirectionalLight('#ffd8b0', 3.4);
@@ -73,63 +88,99 @@ async function start(stage) {
   rim.position.set(1.8, 1.2, -1.5);
   scene.add(key, rim);
 
-  const shadowCanvas = document.createElement('canvas');
-  shadowCanvas.width = shadowCanvas.height = 64;
-  const sc = shadowCanvas.getContext('2d');
-  const grad = sc.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(0,0,0,0.55)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-  sc.fillStyle = grad;
-  sc.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2;
-  scene.add(shadow);
-
   const body = roundedCube(THREE, 0.38, 6);
   const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14), new THREE.MeshStandardMaterial({ color: '#eeedf3', roughness: 0.25 }));
   const eyeDark = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), new THREE.MeshStandardMaterial({ color: '#030305', roughness: 0.2 }));
-  const agents = AGENTS.map((a) => ({ ...a, ...makeAgent(THREE, a.color, body, eyeWhite, eyeDark) }));
+  const agents = AGENT_COLORS.map((color, i) => ({ height: AGENT_HEIGHTS[i], phase: i * 1.3, spot: new THREE.Vector3(), ...makeAgent(THREE, color, body, eyeWhite, eyeDark) }));
   agents.forEach((a) => scene.add(a.root));
 
   const loader = new GLTFLoader();
-  const [gltf, broomGltf] = await Promise.all([loader.loadAsync(MODEL), loader.loadAsync(BROOM.model)]);
-  const broom = new THREE.Group();
-  broomGltf.scene.rotation.x = Math.PI / 2;
-  broomGltf.scene.scale.setScalar(BROOM.scale);
-  broom.add(broomGltf.scene);
-  scene.add(broom);
+  const [gltf, broomGltf] = await Promise.all([loader.loadAsync(MODEL), loader.loadAsync(BROOM)]);
   const yaga = gltf.scene;
   yaga.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
-  scene.add(yaga);
+  const grip = new THREE.Group();
+  grip.position.fromArray(GRIP.pos);
+  grip.quaternion.fromArray(GRIP.quat);
+  grip.scale.setScalar(GRIP.scale);
+  grip.add(broomGltf.scene);
+  yaga.getObjectByName('mixamorigRightHand').add(grip);
+  const shadow = makeShadow(THREE);
+  scene.add(yaga, shadow);
+
   const mixer = new THREE.AnimationMixer(yaga);
-  const move = THREE.AnimationClip.findByName(gltf.animations, MOVE);
-  mixer.clipAction(move).play();
+  const actions = Object.fromEntries(gltf.animations.map((c) => [c.name.replace(/\.\d+$/, ''), mixer.clipAction(c)]));
+  let current = null;
+
+  /** Crossfades her into the named clip. */
+  function play(name) {
+    const next = actions[name];
+    if (next === current) return;
+    next.reset().fadeIn(FADE).play();
+    if (current) current.fadeOut(FADE);
+    current = next;
+  }
+
+  /** Lines the agents up across the stage's width, alternating back and front. */
+  function layout(aspect, distance) {
+    const halfWidth = Math.tan((CAMERA.fov / 2) * Math.PI / 180) * distance * aspect;
+    const rx = Math.min(1.25, halfWidth * 0.7);
+    agents.forEach((a, i) => {
+      a.spot.set(-rx + (2 * rx * i) / (agents.length - 1), a.height, i % 2 ? -0.45 : 0.4);
+    });
+  }
 
   function resize() {
     const { width, height } = stage.getBoundingClientRect();
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    const distance = Math.min(CAMERA.farthest, Math.max(CAMERA.distance, (CAMERA.distance * 1.4) / camera.aspect));
+    camera.position.set(0, CAMERA.height * (distance / CAMERA.distance), distance);
+    camera.lookAt(0, CAMERA.lookY, 0);
+    layout(camera.aspect, distance);
   }
   new ResizeObserver(resize).observe(stage);
   resize();
 
-  const ahead = new THREE.Vector3();
+  const her = { at: 0, step: 1, mode: 'check', until: CHECK_SECONDS, goal: new THREE.Vector3() };
+  const standAt = (a, out) => out.set(a.spot.x - (Math.sign(a.spot.x) || her.step) * BESIDE.x, 0, a.spot.z + BESIDE.z);
+  standAt(agents[0], yaga.position);
+  yaga.rotation.y = Math.atan2(agents[0].spot.x - yaga.position.x, agents[0].spot.z - yaga.position.z);
+  play('agree');
 
-  /** Where the broom is at time t: a slow loop around her, bobbing up and down. */
-  function broomAt(t, out) {
-    const angle = t * BROOM.speed * Math.PI * 2;
-    return out.set(Math.cos(angle) * BROOM.radius, BROOM.height + Math.sin(t * 1.3) * 0.08, Math.sin(angle) * BROOM.radius * 0.6);
+  /** Walks her along the line of agents and back, stopping to nod at each one. */
+  function walk(t, dt) {
+    const a = agents[her.at];
+    if (her.mode === 'check') {
+      const face = Math.atan2(a.spot.x - yaga.position.x, a.spot.z - yaga.position.z);
+      yaga.rotation.y += turnTo(yaga.rotation.y, face) * Math.min(1, dt * TURN_SPEED);
+      if (t < her.until) return;
+      if (her.at + her.step < 0 || her.at + her.step >= agents.length) her.step = -her.step;
+      her.at += her.step;
+      her.mode = 'walk';
+      play('walk');
+    }
+    standAt(agents[her.at], her.goal);
+    const dx = her.goal.x - yaga.position.x, dz = her.goal.z - yaga.position.z, dist = Math.hypot(dx, dz);
+    const step = WALK_SPEED * dt;
+    yaga.rotation.y += turnTo(yaga.rotation.y, Math.atan2(dx, dz)) * Math.min(1, dt * TURN_SPEED);
+    if (dist <= step) {
+      yaga.position.copy(her.goal);
+      her.mode = 'check';
+      her.until = t + CHECK_SECONDS;
+      play('agree');
+      return;
+    }
+    yaga.position.x += (dx / dist) * step;
+    yaga.position.z += (dz / dist) * step;
   }
 
-  function place(t) {
-    broomAt(t, broom.position);
-    broom.lookAt(broomAt(t + 0.05, ahead));
-    broom.rotateZ(-BROOM.bank);
+  /** The agents hover at their spots and wiggle as they work, eyes on the viewer. */
+  function work(t) {
     for (const a of agents) {
-      const angle = a.phase + t * a.speed * Math.PI * 2;
-      a.root.position.set(Math.cos(angle) * a.radius, a.height + Math.sin(t * 1.7 + a.phase) * 0.03, Math.sin(angle) * a.radius * 0.6);
+      a.root.position.set(a.spot.x, a.spot.y + Math.abs(Math.sin(t * 5 + a.phase)) * 0.03, a.spot.z);
       a.root.lookAt(camera.position.x, a.root.position.y, camera.position.z);
+      a.root.rotateZ(Math.sin(t * 7 + a.phase) * 0.12);
       const blink = t > a.blinkAt && t < a.blinkAt + 0.14;
       if (t > a.blinkAt + 0.14) a.blinkAt = t + 2 + Math.random() * 4;
       a.eyes.forEach((e) => { e.scale.y = blink ? 0.12 : 1; });
@@ -143,12 +194,16 @@ async function start(stage) {
   function frame(now) {
     raf = visible && !reduceMotion ? requestAnimationFrame(frame) : 0;
     timer.update(now);
-    mixer.update(reduceMotion ? 0 : timer.getDelta());
-    place(reduceMotion ? 0 : timer.getElapsed());
+    const dt = reduceMotion ? 0 : Math.min(timer.getDelta(), 0.1);
+    const t = reduceMotion ? 0 : timer.getElapsed();
+    walk(t, dt);
+    work(t);
+    shadow.position.set(yaga.position.x, 0.002, yaga.position.z);
+    mixer.update(dt);
     renderer.render(scene, camera);
   }
 
-  if (reduceMotion) mixer.setTime(move.duration * 0.5);
+  if (reduceMotion) mixer.update(actions.agree.getClip().duration * 0.5);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible && !raf) raf = requestAnimationFrame(frame);
