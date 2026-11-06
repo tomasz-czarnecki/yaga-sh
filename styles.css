@@ -345,7 +345,6 @@ h1, h2 {
 .carousel-dots button::before { content: ""; display: block; width: 10px; height: 10px; background: rgb(12 11 10 / 0.45); box-shadow: inset 0 0 0 1px rgb(245 244 242 / 0.75), 0 1px 4px rgb(0 0 0 / 0.5); transition: background 300ms ease; }
 .carousel-dots button[aria-current]::before { background: var(--ink); }
 .feature.project-pixel, .feature.project-game, .feature.project-elliott, .feature.project-whybox, .feature.project-lily { --focus: 85% 50%; }
-.feature.project-palace { --focus: 100% 50%; }
 
 .feature-copy {
   position: absolute;
