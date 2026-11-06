@@ -365,7 +365,7 @@ h1, h2 {
 
 /* Section intro with a cut-out picture of Yaga beside it */
 .showcase-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: clamp(24px, 4vw, 64px); }
-.section-art { width: clamp(160px, 16vw, 220px); aspect-ratio: 1; }
+.section-art { width: clamp(80px, 8vw, 110px); aspect-ratio: 1; }
 .section-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .section-art.is-placeholder {
   display: grid;
@@ -497,7 +497,7 @@ h1, h2 {
 
 @media (max-width: 860px) {
   .showcase-head { grid-template-columns: minmax(0, 1fr); }
-  .section-art { width: 160px; }
+  .section-art { width: 80px; }
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .corporate-inner { grid-template-columns: minmax(0, 1fr); }
   .corporate-broom { width: min(100%, 320px); }
