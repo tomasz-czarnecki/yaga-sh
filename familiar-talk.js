@@ -9,6 +9,9 @@ const YAGA_LINES = [
   'Less talking, more shipping.',
   'Good. Now better.',
   'Tests first!',
+  'while not done: faster()',
+  'for a in agents: a.better()',
+  'assert ship_it',
 ];
 
 const CODE_LINES = [
