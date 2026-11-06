@@ -3,9 +3,9 @@
 import { makeTalk } from './familiar-talk.js';
 import { roundedCube, makeAgent } from './familiar-agent.js';
 
-const AGENT_COLORS = ['#FFA583', '#E9C46A', '#C9A6FF', '#6EE7A8', '#8FB4FF', '#F2A0A8', '#F4A9C8'];
-const AGENT_HEIGHTS = [0.55, 0.32, 0.62, 0.4, 0.58, 0.3, 0.5];
-const AGENT_FACES = ['grin', 'grumpy', 'smile', 'snarl', 'grin', 'smile', 'grumpy'];
+const AGENT_COLORS = ['#FFA583', '#E9C46A', '#F2A0A8', '#C9A6FF', '#6EE7A8', '#8FB4FF', '#F4A9C8'];  // one per project, in page order
+const AGENT_HEIGHTS = [0.55, 0.32, 0.3, 0.62, 0.4, 0.58, 0.5];
+const AGENT_FACES = ['grin', 'grumpy', 'smile', 'smile', 'snarl', 'grin', 'grumpy'];
 const AGENT_SIZE = 0.075;
 const MODEL = 'assets/yaga-agents.glb';
 const BROOM = 'assets/broom.glb';
