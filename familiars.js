@@ -1,4 +1,4 @@
-/** Miss Yaga casting her spell while her agents, one per project, circle around her. Loads when the section is near. */
+/** Miss Yaga nodding and gesturing while her agents, one per project, circle around her. Loads when the section is near. */
 
 const AGENTS = [
   { color: '#FFA583', radius: 0.62, height: 0.78, speed: 0.22, phase: 0.0 },
@@ -11,7 +11,7 @@ const AGENTS = [
 ];
 const AGENT_SIZE = 0.055;
 const MODEL = 'assets/yaga-agents.glb';
-const SPELL = 'cast_a_spell.001';
+const MOVE = 'agree.001';
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -95,8 +95,8 @@ async function start(stage) {
   yaga.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
   scene.add(yaga);
   const mixer = new THREE.AnimationMixer(yaga);
-  const spell = THREE.AnimationClip.findByName(gltf.animations, SPELL);
-  mixer.clipAction(spell).play();
+  const move = THREE.AnimationClip.findByName(gltf.animations, MOVE);
+  mixer.clipAction(move).play();
 
   function resize() {
     const { width, height } = stage.getBoundingClientRect();
@@ -130,7 +130,7 @@ async function start(stage) {
     renderer.render(scene, camera);
   }
 
-  if (reduceMotion) mixer.setTime(spell.duration * 0.5);
+  if (reduceMotion) mixer.setTime(move.duration * 0.5);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     if (visible && !raf) raf = requestAnimationFrame(frame);
