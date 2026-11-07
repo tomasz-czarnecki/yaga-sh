@@ -502,3 +502,7 @@ h1, h2 {
 .byline-role { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 @media (hover: hover) { .byline:hover .byline-name { text-decoration: underline 1px var(--accent); text-underline-offset: 3px; } }
 .nowrap { white-space: nowrap; }
+.mark { color: var(--accent); }
+.hero-title .mark { position: relative; top: -0.3em; margin-left: 0.04em; font-size: 0.7em; }
+.byline { position: relative; }
+.byline .mark { position: absolute; left: -12px; top: -8px; font-size: 28px; font-weight: 600; line-height: 1; }
